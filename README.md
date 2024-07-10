@@ -44,6 +44,12 @@ If you can get tensorflow working on your machine, pytorch should also work.
 
 ## Installation
 
+Install with `pip`:
+
+```
+pip install git+https://github.com/Andrewwango/libcpab.git
+```
+
 Clone this reposatory to a directory of your choice
 ```
 git clone https://github.com/SkafteNicki/libcpab
