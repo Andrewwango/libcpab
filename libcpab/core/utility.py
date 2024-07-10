@@ -14,7 +14,7 @@ import os, random
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.linalg as la
-from scipy import transpose, compress
+#from scipy import transpose, compress
 
 #%%
 class params:
@@ -38,8 +38,8 @@ def null(A, eps = 1e-6):
     u, s, vh = la.svd(A)
     padding = np.max([0, np.shape(A)[-1] - np.shape(s)[0]])
     null_mask = np.concatenate(((s <= eps), np.ones((padding,), dtype=bool)), axis=0)
-    null_space = compress(null_mask, vh, axis=0)
-    return transpose(null_space)
+    null_space = np.compress(null_mask, vh, axis=0)
+    return np.transpose(null_space)
 
 #%%
 def make_hashable(arr):
