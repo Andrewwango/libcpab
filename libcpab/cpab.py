@@ -490,9 +490,11 @@ class Cpab(object):
             '''All elements of tess_size must be positive'''
         assert backend in ['numpy', 'tensorflow', 'pytorch'], \
             '''Unknown backend, choose between 'numpy', 'tensorflow' or 'pytorch' '''
-        assert torch.device(device).type in ['cpu', 'cuda'], \
-            '''Unknown device, choose between 'cpu' or a cuda device '''
-        if backend == 'numpy':
+        if backend == 'pytorch':
+            from torch import device as torchdevice
+            assert torchdevice(device).type in ['cpu', 'cuda'], \
+                '''Unknown device, choose between 'cpu' or a cuda device '''
+        elif backend == 'numpy':
             assert device == 'cpu', '''Cannot use gpu with numpy backend '''
         assert type(zero_boundary) == bool, \
             '''Argument zero_boundary must be True or False'''
