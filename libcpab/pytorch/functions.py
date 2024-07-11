@@ -21,8 +21,6 @@ def assert_version():
 
 #%%
 def to(x, dtype=torch.float32, device=None):
-    if type(device)==str:
-        device = torch.device("cuda") if device=="gpu" else torch.device("cpu")
     if isinstance(x, torch.Tensor):
         return x.to(device)
     else:
@@ -34,7 +32,7 @@ def tonumpy(x):
 
 #%%
 def check_device(x, device_name):
-    return (x.is_cuda) == (device_name=="gpu")
+    return (x.is_cuda) == (torch.device(device_name).type == "cuda")
 
 #%%
 def backend_type():
