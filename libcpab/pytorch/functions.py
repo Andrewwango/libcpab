@@ -87,7 +87,6 @@ def maximum(x):
 
 #%%
 def sample_transformation(d, n_sample=1, mean=None, cov=None, device='cpu'):
-    #device = torch.device('cpu') if device=='cpu' else torch.device('cuda')
     mean = torch.zeros(d, dtype=torch.float32, device=device) if mean is None else mean
     cov = torch.eye(d, dtype=torch.float32, device=device) if cov is None else cov
     distribution = torch.distributions.MultivariateNormal(mean, cov)
@@ -96,12 +95,10 @@ def sample_transformation(d, n_sample=1, mean=None, cov=None, device='cpu'):
 #%%
 def identity(d, n_sample=1, epsilon=0, device='cpu'):
     assert epsilon>=0, "epsilon need to be larger than 0"
-    #device = torch.device('cpu') if device=='cpu' else torch.device('cuda')
     return torch.zeros(n_sample, d, dtype=torch.float32, device=device) + epsilon
 
 #%%
 def uniform_meshgrid(ndim, domain_min, domain_max, n_points, device='cpu'):
-    #device = torch.device('cpu') if device=='cpu' else torch.device('cuda')
     lin = [torch.linspace(domain_min[i], domain_max[i], n_points[i], 
                           device=device) for i in range(ndim)]
     mesh = torch.meshgrid(lin[::-1])
