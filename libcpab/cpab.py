@@ -116,7 +116,6 @@ class Cpab(object):
         elif self.backend_name == 'pytorch':
             from .pytorch import functions as backend
         self.backend = backend
-        self.device = device.lower()
         
         # Assert that we have a recent version of the backend
         self.backend.assert_version()
