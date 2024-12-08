@@ -10,7 +10,7 @@ import torch
 from torch.utils.cpp_extension import load
 from .findcellidx import findcellidx
 from .expm import expm
-from ..core.utility import get_dir
+import os
 
 #%%
 class _notcompiled:
@@ -23,7 +23,7 @@ class _notcompiled:
         self.backward = f
 
 #%%
-_dir = get_dir(__file__)
+_dir = os.path.dirname(os.path.realpath(__file__))
 _verbose = False # TODO: set this flag in the main class, maybe
 # Jit compile cpu source
 try:
