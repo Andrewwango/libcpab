@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .core.utility import params, get_dir, create_dir
 from .core.tesselation import Tesselation1D, Tesselation2D, Tesselation3D
+from .pytorch import functions as backend
 
 #%%
 class Cpab(object):
@@ -53,13 +54,12 @@ class Cpab(object):
     """
     def __init__(self, 
                  tess_size,
-                 backend = 'numpy',
                  device = 'cpu', 
                  zero_boundary=True,
                  volume_perservation=False,
                  override=False):
         # Check input
-        self._check_input(tess_size, backend, device, 
+        self._check_input(tess_size, device, 
                           zero_boundary, volume_perservation, override)
         
         # Parameters
@@ -108,18 +108,10 @@ class Cpab(object):
         self.params.D, self.params.d = self.params.basis.shape
                 
         # Load backend and set device
-        self.backend_name = backend
-        if self.backend_name == 'numpy':
-            from .numpy import functions as backend
-        elif self.backend_name == 'tensorflow':
-            from .tensorflow import functions as backend
-        elif self.backend_name == 'pytorch':
-            from .pytorch import functions as backend
-        self.backend = backend
         self.device = device
         
         # Assert that we have a recent version of the backend
-        self.backend.assert_version()
+        backend.assert_version()
         
     #%%
     def get_theta_dim(self):
@@ -164,7 +156,7 @@ class Cpab(object):
         Output:
             grid: [ndim, nP] matrix of points, where nP = product(n_points)
         """
-        return self.backend.uniform_meshgrid(self.params.ndim,
+        return backend.uniform_meshgrid(self.params.ndim,
                                              self.params.domain_min,
                                              self.params.domain_max,
                                              n_points, self.device)
@@ -183,9 +175,9 @@ class Cpab(object):
         """
         if mean is not None: self._check_type(mean); self._check_device(mean)
         if cov is not None: self._check_type(cov); self._check_device(cov)
-        samples = self.backend.sample_transformation(self.params.d, n_sample, 
+        samples = backend.sample_transformation(self.params.d, n_sample, 
                                                      mean, cov, self.device)
-        return self.backend.to(samples, device=self.device)
+        return backend.to(samples, device=self.device)
         
     
     #%%
@@ -209,32 +201,32 @@ class Cpab(object):
         """
         
         # Get cell centers and convert to backend type
-        centers = self.backend.to(self.tesselation.get_cell_centers(), device=self.device)
+        centers = backend.to(self.tesselation.get_cell_centers(), device=self.device)
         
         # Get distance between cell centers
-        dist = self.backend.pdist(centers)
+        dist = backend.pdist(centers)
         
         # Make into a covariance matrix between parameters
         ppc = self.params.params_pr_cell
-        cov_init = self.backend.zeros(self.params.D, self.params.D, device=self.device)
+        cov_init = backend.zeros(self.params.D, self.params.D, device=self.device)
         
         for i in range(self.params.nC):
             for j in range(self.params.nC):
                 # Make block matrix with large values
-                block = 100*self.backend.maximum(dist)*self.backend.ones(ppc, ppc)
+                block = 100*backend.maximum(dist)*backend.ones(ppc, ppc)
                 # Fill in diagonal with actual values
-                block[self.backend.arange(ppc), self.backend.arange(ppc)] = \
-                    self.backend.repeat(dist[i,j], ppc)
+                block[backend.arange(ppc), backend.arange(ppc)] = \
+                    backend.repeat(dist[i,j], ppc)
                 # Fill block into the large covariance
                 cov_init[ppc*i:ppc*(i+1), ppc*j:ppc*(j+1)] = block
         
         # Squared exponential kernel
-        cov_avees = output_variance**2 * self.backend.exp(-(cov_init / (2*length_scale**2)))
+        cov_avees = output_variance**2 * backend.exp(-(cov_init / (2*length_scale**2)))
 
         # Transform covariance to theta space
-        B = self.backend.to(self.params.basis, self.device)
-        B_t = self.backend.transpose(B)
-        cov_theta = self.backend.matmul(B_t, self.backend.matmul(cov_avees, B))
+        B = backend.to(self.params.basis, self.device)
+        B_t = backend.transpose(B)
+        cov_theta = backend.matmul(B_t, backend.matmul(cov_avees, B))
         
         # Sample
         samples = self.sample_transformation(n_sample, mean=mean, cov=cov_theta)
@@ -251,7 +243,7 @@ class Cpab(object):
         Output:
             samples: [n_sample, d] matrix. Each row is a sample    
         """
-        return self.backend.identity(self.params.d, n_sample, epsilon, self.device)
+        return backend.identity(self.params.d, n_sample, epsilon, self.device)
     
     #%%
     def transform_grid(self, grid, theta):
@@ -273,7 +265,7 @@ class Cpab(object):
             assert grid.shape[0] == theta.shape[0], '''When passing a 3D grid, expects
                 the first dimension to be of same length as the first dimension of
                 theta'''
-        transformed_grid = self.backend.transformer(grid, theta, self.params)
+        transformed_grid = backend.transformer(grid, theta, self.params)
         return transformed_grid
     
     #%%    
@@ -298,7 +290,7 @@ class Cpab(object):
         """            
         self._check_type(data); self._check_device(data)
         self._check_type(grid); self._check_device(grid)
-        return self.backend.interpolate(self.params.ndim, data, grid, outsize)
+        return backend.interpolate(self.params.ndim, data, grid, outsize)
     
     #%%
     def transform_data(self, data, theta, outsize):
@@ -342,7 +334,7 @@ class Cpab(object):
         """
         self._check_type(grid); self._check_device(grid)
         self._check_type(theta); self._check_device(theta)
-        v = self.backend.calc_vectorfield(grid, theta, self.params)
+        v = backend.calc_vectorfield(grid, theta, self.params)
         return v
     
     #%%
@@ -362,8 +354,8 @@ class Cpab(object):
         # Calculate vectorfield and convert to numpy
         grid = self.uniform_meshgrid([nb_points for _ in range(self.params.ndim)])
         v = self.calc_vectorfield(grid, theta)
-        v = self.backend.tonumpy(v)
-        grid = self.backend.tonumpy(grid)
+        v = backend.tonumpy(v)
+        grid = backend.tonumpy(grid)
         
         # Plot
         if self.params.ndim == 1:
@@ -376,7 +368,6 @@ class Cpab(object):
             ax.set_xlim(self.params.domain_min[0], self.params.domain_max[0])
             ax.set_ylim(self.params.domain_min[1], self.params.domain_max[1])            
         elif self.params.ndim==3:
-            from mpl_toolkits.mplot3d import Axes3D
             ax = fig.add_subplot(111, projection='3d')
             plot = ax.quiver(grid[0,:], grid[1,:], grid[2,:], v[0,:], v[1,:], v[2,:],
                              length=0.3, arrow_length_ratio=0.5)
@@ -442,15 +433,15 @@ class Cpab(object):
                           for i in range(self.params.ndim)]
             domain_max = [self.params.domain_max[i]+domain_size[i]/10 
                           for i in range(self.params.ndim)]
-            grid = self.backend.uniform_meshgrid(self.params.ndim, domain_min, 
+            grid = backend.uniform_meshgrid(self.params.ndim, domain_min, 
                         domain_max, [nb_points for _ in range(self.params.ndim)])
         else:
             grid = self.uniform_meshgrid([nb_points for _ in range(self.params.ndim)])
         
         # Find cellindex and convert to numpy
-        idx = self.backend.findcellidx(self.params.ndim, grid, self.params.nc)
-        idx = self.backend.tonumpy(idx)
-        grid = self.backend.tonumpy(grid)
+        idx = backend.findcellidx(self.params.ndim, grid, self.params.nc)
+        idx = backend.tonumpy(idx)
+        grid = backend.tonumpy(grid)
         
         # Plot
         if self.params.ndim == 1:
@@ -488,14 +479,6 @@ class Cpab(object):
             '''All elements of tess_size must be integers'''
         assert all([e > 0 for e in tess_size]), \
             '''All elements of tess_size must be positive'''
-        assert backend in ['numpy', 'tensorflow', 'pytorch'], \
-            '''Unknown backend, choose between 'numpy', 'tensorflow' or 'pytorch' '''
-        if backend == 'pytorch':
-            from torch import device as torchdevice
-            assert torchdevice(device).type in ['cpu', 'cuda'], \
-                '''Unknown device, choose between 'cpu' or a cuda device '''
-        elif backend == 'numpy':
-            assert device == 'cpu', '''Cannot use gpu with numpy backend '''
         assert type(zero_boundary) == bool, \
             '''Argument zero_boundary must be True or False'''
         assert type(volume_perservation) == bool, \
@@ -510,14 +493,14 @@ class Cpab(object):
                 pytorch backend expects torch.tensor
                 tensorflow backend expects tf.tensor
         """
-        assert isinstance(x, self.backend.backend_type()), \
+        assert isinstance(x, backend.backend_type()), \
             ''' Input has type {0} but expected type {1} '''.format(
-            type(x), self.backend.backend_type())
+            type(x), backend.backend_type())
             
     #%%
     def _check_device(self, x):
         """ Asssert that x is on the same device (cpu or gpu) as the class """
-        assert self.backend.check_device(x, self.device), '''Input is placed on 
+        assert backend.check_device(x, self.device), '''Input is placed on 
             device {0} but the class expects it to be on device {1}'''.format(
             str(x.device), self.device)
             
@@ -536,6 +519,5 @@ class Cpab(object):
             Backend:                        {7}
         '''.format(self.params.nc, self.params.nC, self.params.d, 
             self.params.domain_min, self.params.domain_max, 
-            self.params.zero_boundary, self.params.volume_perservation,
-            self.backend_name)
+            self.params.zero_boundary, self.params.volume_perservation)
         return output
