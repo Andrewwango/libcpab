@@ -11,11 +11,12 @@ from typing import Union, Tuple, List
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from .tesselation import Tesselation1D, Tesselation2D, Tesselation3D
-from .pytorch.interpolation import interpolate
-from .pytorch.transformer import CPAB_transformer as transformer
-from .pytorch.findcellidx import findcellidx
 import torch
+
+from .tesselation import Tesselation1D, Tesselation2D, Tesselation3D
+from .interpolation import interpolate
+from .transformer import CPAB_transformer as transformer
+from .findcellidx import findcellidx
 
 class params:
     pass
