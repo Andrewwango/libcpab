@@ -14,6 +14,6 @@ setup(name = "libcpab",
       description = "Diffiomorphism for dummies",
       author = "Nicki Skafte Detlefsen",
       author_email = "nsde@dtu.dk",
-      packages = ["libcpab", "libcpab.core", "libcpab.pytorch"],
+      packages = ["libcpab"],
       license = "MIT",
       long_description = open('README.md').read())

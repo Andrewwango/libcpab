@@ -28,8 +28,8 @@ _verbose = False # TODO: set this flag in the main class, maybe
 # Jit compile cpu source
 try:
     cpab_cpu = load(name = 'cpab_cpu',
-                    sources = [_dir + '/transformer.cpp',
-                               _dir + '/../core/cpab_ops.cpp'],
+                    sources = [_dir + '/c/transformer.cpp',
+                               _dir + '/c/cpab_ops.cpp'],
                     verbose=_verbose)
     _cpu_succes = True
     if _verbose:
@@ -49,9 +49,9 @@ except Exception as e:
 # Jit compile gpu source
 try:
     cpab_gpu = load(name = 'cpab_gpu',
-                    sources = [_dir + '/transformer_cuda.cpp',
-                               _dir + '/transformer_cuda.cu',
-                               _dir + '/../core/cpab_ops.cu'],
+                    sources = [_dir + '/c/transformer_cuda.cpp',
+                               _dir + '/c/transformer_cuda.cu',
+                               _dir + '/c/cpab_ops.cu'],
                     verbose=_verbose,
                     with_cuda=True)
     _gpu_succes = True
