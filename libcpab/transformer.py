@@ -6,11 +6,11 @@ Created on Tue Nov 20 10:27:16 2018
 """
 
 #%%
+import os
 import torch
 from torch.utils.cpp_extension import load
 from .findcellidx import findcellidx
 from .expm import expm
-import os
 
 #%%
 class _notcompiled:
