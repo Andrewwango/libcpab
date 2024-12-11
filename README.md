@@ -1,5 +1,7 @@
 # libcpab
 
+Maintained fork of libcpab for PyTorch.
+
 This fork of [libcpab](https://github.com/SkafteNicki/libcpab):
 
 - Removes numpy and tensorflow backends to only allow pytorch;
