@@ -343,7 +343,7 @@ class Cpab(object):
 
 
     #%%
-    def visualize_vectorfield(self, theta, nb_points = 50, fig = plt.figure()):
+    def visualize_vectorfield(self, theta, nb_points = 50, fig = None):
         """ Utility function that helps visualize the vectorfield for a specific
             parametrization vector theta 
         Arguments:    
@@ -354,7 +354,9 @@ class Cpab(object):
         Output:
             plot: handle to quiver plot
         """
-        
+        if fig is None:
+            fig = plt.figure()
+
         # Calculate vectorfield and convert to numpy
         grid = self.uniform_meshgrid([nb_points for _ in range(self.params.ndim)])
         v = self.calc_vectorfield(grid, theta)
@@ -384,7 +386,7 @@ class Cpab(object):
         return plot
     
     #%%
-    def visualize_deformgrid(self, theta, nb_lines = 10, nb_points= 1000, fig = plt.figure()):
+    def visualize_deformgrid(self, theta, nb_lines = 10, nb_points= 1000, fig = None):
         """ Utility function that helps visualize a deformation. Currently
             only implemented in 2D.
         Arguments:
@@ -395,6 +397,9 @@ class Cpab(object):
         Output:
             plot: list of plot handles to lines
         """
+        if fig is None:
+            fig = plt.figure()
+
         if self.params.ndim == 2:
             x = np.linspace(0,1,nb_lines)
             y = np.linspace(0,1,nb_lines)
@@ -419,7 +424,7 @@ class Cpab(object):
             raise NotImplementedError('This is only implemented for 2D domain')
     
     #%%
-    def visualize_tesselation(self, nb_points = 50, show_outside=False, fig=plt.figure()):
+    def visualize_tesselation(self, nb_points = 50, show_outside=False, fig=None):
         """ Utility function that helps visualize the tesselation.
         Arguments:
             nb_points: number of points in each dimension
@@ -430,6 +435,9 @@ class Cpab(object):
         Output:
             plot: handle to tesselation plot
         """
+        if fig is None:
+            fig = plt.figure()
+
         if show_outside:
             domain_size = [self.params.domain_max[i] - self.params.domain_min[i] 
                            for i in range(self.params.ndim)]
