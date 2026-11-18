@@ -63,15 +63,11 @@ class Tesselation(object):
         self.zero_boundary = zero_boundary
         self.volume_perservation = volume_perservation
         self.dir = direc
-        self._basis_file = self.dir + \
-                            'cpab_basis_dim' + str(len(self.nc)) + '_tess' + \
-                            '_'.join([str(e) for e in self.nc]) + '_' + \
-                            'vo' + str(int(not self.zero_boundary)) + '_' + \
-                            'zb' + str(int(self.zero_boundary)) + '_' + \
-                            'vp' + str(int(self.volume_perservation))
+        filename = f"cpab_basis_dim{len(self.nc)}_tess{'_'.join([str(e) for e in self.nc])}_vo{int(not self.zero_boundary)}_zb{int(self.zero_boundary)}vp{int(self.volume_perservation)}.cpab_basis"
+        self._basis_file = self.dir / filename
 
         # Check if file exist else calculate the basis
-        if not os.path.isfile(self._basis_file+'.cpab_basis') or override:
+        if not os.path.isfile(self._basis_file) or override:
             # Get vertices
             self.find_verts()
             
@@ -102,11 +98,11 @@ class Tesselation(object):
             self.B = np.transpose(null_space)
         
             # Save to file
-            with open(self._basis_file + '.cpab_basis', 'wb') as f:
+            with open(self._basis_file, 'wb') as f:
                 pickle.dump(self.__dict__, f, pickle.HIGHEST_PROTOCOL)
         
         else:
-            with open(self._basis_file + '.cpab_basis', 'rb') as f:
+            with open(self._basis_file, 'rb') as f:
                 self.__dict__ = pickle.load(f)
     
     def get_cell_centers(self):
