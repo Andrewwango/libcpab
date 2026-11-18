@@ -5,6 +5,7 @@ See LICENSE for more details.
 """
 
 #%%
+from pathlib import Path
 from typing import Union, Tuple, List
 import os
 import numpy as np
@@ -35,8 +36,11 @@ class Cpab(object):
         volume_perservation: bool, determine if the transformation is 
             volume perservating
             
-        override: bool, if true a new basis will always be created and saved,
+        override: bool, if True a new basis will always be created and saved,
             when the class is called
+        
+        cache_path: pathlib.Path | str, path to save cache files. By default, files are saved in
+            "$HOME/.cache/libcpab/".
         
     Methods:
         @get_theta_dim
@@ -59,7 +63,9 @@ class Cpab(object):
                  device = 'cpu', 
                  zero_boundary: bool = True,
                  volume_perservation: bool = False,
-                 override: bool = False):
+                 override: bool = False,
+                 cache_path: str | Path | None = None
+        ):
         # Check input
         if not (0 < len(tess_size) <= 3) or not all([e > 0 for e in tess_size]):
             raise ValueError("tess_size must be a list of positive integers of length 1, 2 or 3.")
@@ -81,7 +87,8 @@ class Cpab(object):
         self.params.use_slow = False
         
         # For saving the basis
-        self._dir = os.path.dirname(os.path.realpath(__file__)) + '/../basis_files/'
+        dir_root = Path(cache_path) if cache_path is not None else Path.home() / ".cache"
+        self._dir = dir_root / "libcpab"
         if not os.path.exists(self._dir): os.mkdir(self._dir)
         
         # Specific for the different dims
